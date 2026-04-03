@@ -182,6 +182,4 @@ This project clearly shows:
 **Sai Lokesh Sammengi**
 Backend Developer | Java | Spring Boot
 
----
 
-If you want next step, I can upgrade this into a **“interview-explaining README”** where you can literally speak this flow confidently in interviews (very useful for Kafka + microservices questions).
