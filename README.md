@@ -4,32 +4,36 @@
 
 This project demonstrates an **event-driven microservices architecture** using **Apache Kafka** for asynchronous communication.
 
-It simulates a simple e-commerce flow:
+It simulates a real-world e-commerce workflow:
 
-* Order Service places an order
-* Inventory Service validates stock
-* Services communicate via Kafka events
+* Order creation
+* Inventory validation
+* Shipping processing
 
-The goal is to showcase:
-
-* Event-driven architecture
-* Kafka producer/consumer
-* Microservices communication without tight coupling
+Each service communicates using Kafka events, ensuring **loose coupling and scalability**.
 
 ---
 
 ## 🏗️ Architecture
 
 ```
-Client → Order Service → Kafka → Inventory Service
+Client → Order Service → Kafka → Inventory Service → Kafka → Shipping Service
 ```
 
-### Flow:
+---
 
-1. User sends order request
-2. Order Service publishes event to Kafka
-3. Inventory Service consumes event
-4. Inventory checks stock and processes request
+## 🔄 Flow Explanation
+
+1. Client sends request to **Order Service**
+2. Order Service publishes `OrderCreated` event to Kafka
+3. **Inventory Service** consumes the event
+
+   * Checks product availability
+   * If available → publishes `InventoryConfirmed`
+4. **Shipping Service** consumes `InventoryConfirmed`
+
+   * Initiates shipping process
+   * Updates shipping status
 
 ---
 
@@ -47,14 +51,24 @@ Client → Order Service → Kafka → Inventory Service
 
 ### 1. Order Service
 
-* Accepts order requests
-* Publishes events to Kafka topic
+* Creates orders
+* Publishes `OrderCreated` event
+
+---
 
 ### 2. Inventory Service
 
-* Consumes Kafka events
-* Checks product availability
-* Sends response/logs status
+* Consumes `OrderCreated`
+* Validates stock
+* Publishes `InventoryConfirmed` / `InventoryFailed`
+
+---
+
+### 3. Shipping Service
+
+* Consumes `InventoryConfirmed`
+* Handles shipment processing
+* Logs or updates shipping status
 
 ---
 
@@ -72,14 +86,16 @@ bin/zookeeper-server-start.sh config/zookeeper.properties
 bin/kafka-server-start.sh config/server.properties
 ```
 
-### 3. Create Topic
+### 3. Create Topics
 
 ```bash
 bin/kafka-topics.sh --create \
 --topic order-topic \
---bootstrap-server localhost:9092 \
---partitions 1 \
---replication-factor 1
+--bootstrap-server localhost:9092
+
+bin/kafka-topics.sh --create \
+--topic inventory-topic \
+--bootstrap-server localhost:9092
 ```
 
 ---
@@ -89,7 +105,8 @@ bin/kafka-topics.sh --create \
 Start services in this order:
 
 1. Inventory Service
-2. Order Service
+2. Shipping Service
+3. Order Service
 
 ---
 
@@ -97,11 +114,11 @@ Start services in this order:
 
 ### Create Order
 
-```http
+```
 POST /orders
 ```
 
-#### Sample Request:
+### Sample Request
 
 ```json
 {
@@ -112,21 +129,22 @@ POST /orders
 
 ---
 
-## 🔄 Kafka Flow
+## 🔄 Kafka Topics & Events
 
-* **Producer:** Order Service
-* **Topic:** `order-topic`
-* **Consumer:** Inventory Service
+| Topic           | Producer          | Consumer          | Event              |
+| --------------- | ----------------- | ----------------- | ------------------ |
+| order-topic     | Order Service     | Inventory Service | OrderCreated       |
+| inventory-topic | Inventory Service | Shipping Service  | InventoryConfirmed |
 
 ---
 
 ## 📊 Key Concepts Demonstrated
 
-* Asynchronous communication
 * Event-driven architecture
-* Loose coupling between services
-* Kafka producer & consumer
-* Real-time message processing
+* Asynchronous communication
+* Kafka Producer & Consumer
+* Microservices decoupling
+* Event chaining between services
 
 ---
 
@@ -134,37 +152,36 @@ POST /orders
 
 * No Saga orchestration implemented
 * No Outbox pattern
+* No distributed transactions
 * Basic error handling
-* No database consistency management
-
-*(This project focuses on understanding Kafka and async communication rather than full production design.)*
 
 ---
 
 ## 📈 Future Enhancements
 
-* Implement Saga pattern (orchestration/choreography)
-* Add Outbox pattern
-* Add payment service
-* Add database persistence
-* Add retry & dead-letter queue (DLQ)
+* Implement **Saga Pattern (Choreography/Orchestration)**
+* Add **Payment Service**
+* Introduce **Retry & DLQ (Dead Letter Queue)**
+* Add **Database persistence**
+* Implement **Outbox Pattern**
 
 ---
 
 ## 💡 Why This Project?
 
-This project is built to:
+This project clearly shows:
 
-* Demonstrate real-world microservices communication
-* Show practical Kafka usage
-* Explain async processing in interviews
+* How microservices communicate asynchronously
+* How Kafka enables event flow between services
+* Practical understanding of distributed systems
 
 ---
 
 ## 👨‍💻 Author
 
 **Sai Lokesh Sammengi**
+Backend Developer | Java | Spring Boot
 
-* Backend Developer (Java + Spring Boot)
+---
 
-
+If you want next step, I can upgrade this into a **“interview-explaining README”** where you can literally speak this flow confidently in interviews (very useful for Kafka + microservices questions).
